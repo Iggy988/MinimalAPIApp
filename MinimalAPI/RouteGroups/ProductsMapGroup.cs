@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MinimalAPI.Models;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
 
 namespace MinimalAPI.RouteGroups;
@@ -24,7 +23,8 @@ public static class ProductsMapGroup
             //var content = string.Join('\n', products.Select(temp => temp.ToString()));
             //1, xxxxx
             //2, xxxxx
-            await context.Response.WriteAsync(JsonSerializer.Serialize(products));
+            //await context.Response.WriteAsync(JsonSerializer.Serialize(products));
+            return Results.Ok(products);
         });
 
 
@@ -34,11 +34,14 @@ public static class ProductsMapGroup
             Product? product = products.FirstOrDefault(temp => temp.Id == id);
             if (product == null)
             {
-                context.Response.StatusCode = 400; // BadRequest
-                await context.Response.WriteAsync("Id is inncorect");
-                return;
+                //context.Response.StatusCode = 400; // BadRequest
+                //await context.Response.WriteAsync("Id is inncorect");
+                //return;
+                return Results.BadRequest(new { error = "Incorrect Product ID" });
             }
-            await context.Response.WriteAsync(JsonSerializer.Serialize(product));
+            //await context.Response.WriteAsync(JsonSerializer.Serialize(product));
+
+            return Results.Ok(product);
 
         });
 
@@ -46,23 +49,27 @@ public static class ProductsMapGroup
         group.MapPost("/", async (HttpContext context, Product product) =>
         {
             products.Add(product);
-            await context.Response.WriteAsync("Product Added");
+            //await context.Response.WriteAsync("Product Added");
+            return Results.Ok(new { message = "Product Added" });
         });
 
         //PUT /products/{id}
-        group.MapPut("/{id}", async (HttpContext context, int id, [FromBody]Product product) => 
+        group.MapPut("/{id}", async (HttpContext context, int id, [FromBody] Product product) =>
         {
             Product? productFromCollection = products.FirstOrDefault(temp => temp.Id == id);
             if (productFromCollection == null)
             {
-                context.Response.StatusCode = 400; // BadRequest
-                await context.Response.WriteAsync("Id is inncorect");
-                return;
+                //context.Response.StatusCode = 400; // BadRequest
+                //await context.Response.WriteAsync("Id is inncorect");
+                //return;
+                return Results.BadRequest(new { error = "Incorrect Product ID" });
             }
 
             productFromCollection.ProductName = product.ProductName;
 
-            await context.Response.WriteAsync("Product Updated");
+            //await context.Response.WriteAsync("Product Updated");
+
+            return Results.Ok(new { message = "Product Updated" });
         });
 
         //DELETE /products/{id}
@@ -71,14 +78,21 @@ public static class ProductsMapGroup
             Product? productFromCollection = products.FirstOrDefault(temp => temp.Id == id);
             if (productFromCollection == null)
             {
-                context.Response.StatusCode = 400; // BadRequest
-                await context.Response.WriteAsync("Id is inncorect");
-                return;
+                //context.Response.StatusCode = 400; // BadRequest
+                //await context.Response.WriteAsync("Id is inncorect");
+                //return;
+
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    { "id", new string[] { "Id is incorect" }}
+                });
             }
 
             products.Remove(productFromCollection);
 
-            await context.Response.WriteAsync("Product Deleted");
+            //await context.Response.WriteAsync("Product Deleted");
+
+            return Results.Ok(new { message = "Product Deleted"});
         });
         return group;
     }
