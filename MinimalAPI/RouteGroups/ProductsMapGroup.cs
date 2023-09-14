@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using MinimalAPI.EndpointFilters;
 using MinimalAPI.Models;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
@@ -52,7 +53,9 @@ public static class ProductsMapGroup
             products.Add(product);
             //await context.Response.WriteAsync("Product Added");
             return Results.Ok(new { message = "Product Added" });
-        }).AddEndpointFilter(async (EndpointFilterInvocationContext context, EndpointFilterDelegate next) =>
+        })
+            .AddEndpointFilter<CustomEndpointFilter>()
+            .AddEndpointFilter(async (EndpointFilterInvocationContext context, EndpointFilterDelegate next) =>
         {
             var product = context.Arguments.OfType<Product>().FirstOrDefault();
             if (product == null)
